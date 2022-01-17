@@ -38,7 +38,7 @@ end</string>
     <Item class="Script" referent="5">
       <Properties>
         <string name="Name">Server</string>
-        <string name="Source">print("Hello world, from server!")</string>
+        <string name="Source">print("Hello Igor, are you happy here? ")</string>
       </Properties>
     </Item>
   </Item>
