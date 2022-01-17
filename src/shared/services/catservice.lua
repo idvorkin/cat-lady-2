@@ -40,6 +40,10 @@ end
 
 function MoveOneSquareRandom(model)
     old_pos = model_to_movable(model).Position
+    if old_pos == nil then
+        return
+    end
+
     local new_x  = old_pos.X + randomNegate(1) 
     local new_z  = old_pos.Z + randomNegate(1)
     local new_pos = Vector3.new(new_x,old_pos.y, new_z)
@@ -67,6 +71,9 @@ end
 
 function MoveCloserToPosition(model, player_pos)
     old_pos = model_to_movable(model).Position
+    if old_pos == nil then
+        return
+    end
     local delta_x=0
     local delta_y=0
     local delta_z=0
@@ -91,6 +98,9 @@ end
 
 function DanceUpAndDown(model)
     old_pos = model_to_movable(model).Position
+    if old_pos == nil then
+        return
+    end
     local rand = math.random() -- return a number from 0 to 1
     local velocity = 2
     local delta_y = 1
