@@ -1,0 +1,7 @@
+# Package names are always "SCOPE/NAME"
+# They can inclde lowercase lett
+[package]
+name ='rx-cat-lady'
+
+[dependancies]
+Knit = "sleitnick/knit@^1"
