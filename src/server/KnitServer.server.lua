@@ -5,7 +5,8 @@ Knit.AddServices(game:GetService("ReplicatedStorage").Common.services)
 
 Knit.Start():andThen(function()
     print ("Knit Started on Server")
-    Knit.GetService("CatService"):AddCat()
+    -- Knit.GetService("CatService"):AddCat()
+    -- CatService.AddCat()
 end
 ):catch(warn)
 -- Knit.Start() returns a Promise, so we are catching any errors and feeding it to the built-in 'warn' function
