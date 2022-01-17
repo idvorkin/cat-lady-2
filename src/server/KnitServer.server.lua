@@ -1,9 +1,11 @@
 local Knit = require(game:GetService("ReplicatedStorage").Packages.Knit)
-local CatService = require(game:GetService("ReplicatedStorage").Common.services.catservice)
+local CatService = require(game:GetService("ReplicatedStorage").Common.services.CatService)
+
+Knit.AddServices(game:GetService("ReplicatedStorage").Common.services)
 
 Knit.Start():andThen(function()
     print ("Knit Started on Server")
-    CatService.AddCat()
+    Knit.GetService("CatService"):AddCat()
 end
 ):catch(warn)
 -- Knit.Start() returns a Promise, so we are catching any errors and feeding it to the built-in 'warn' function
