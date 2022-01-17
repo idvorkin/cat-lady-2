@@ -1,7 +1,8 @@
-# Package names are always "SCOPE/NAME"
-# They can inclde lowercase lett
 [package]
-name ='rx-cat-lady'
+name = "idvorkin/cat-lady-2"
+version = "0.1.0"
+registry = "https://github.com/UpliftGames/wally-index"
+realm = "shared"
 
-[dependancies]
+[dependencies]
 Knit = "sleitnick/knit@^1"

@@ -4,3 +4,10 @@
 # Roblox Studio lock files
 /*.rbxlx.lock
 /*.rbxl.lock
+packages/*
+
+#Ignore vim junk
+*.swp
+*.swo
+*~
+tags
