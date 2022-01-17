@@ -16,6 +16,10 @@ function PrintTopLine(txt)
   -- game.Workspace.Billboard.Label1.Text = txt
 end
 
+function model_to_movable(model)
+   return model.Cat
+end 
+
 
 local i = 0 
 function Clone(template)
@@ -35,7 +39,7 @@ function randomNegate(x)
 end 
 
 function MoveOneSquareRandom(model)
-    old_pos = model.PrimaryPart.Position
+    old_pos = model_to_movable(model).Position
     local new_x  = old_pos.X + randomNegate(1) 
     local new_z  = old_pos.Z + randomNegate(1)
     local new_pos = Vector3.new(new_x,old_pos.y, new_z)
@@ -62,7 +66,7 @@ function MoveHowZachWants(model)
 end 
 
 function MoveCloserToPosition(model, player_pos)
-    old_pos = model.PrimaryPart.Position
+    old_pos = model_to_movable(model).Position
     local delta_x=0
     local delta_y=0
     local delta_z=0
@@ -86,7 +90,7 @@ function MoveCloserToPosition(model, player_pos)
 end 
 
 function DanceUpAndDown(model)
-    old_pos = model.PrimaryPart.Position
+    old_pos = model_to_movable(model).Position
     local rand = math.random() -- return a number from 0 to 1
     local velocity = 2
     local delta_y = 1
