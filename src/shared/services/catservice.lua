@@ -123,7 +123,7 @@ function CatService:KnitStart()
 
     print('CatService:Start v0.3')
 
-    PlayerLifeCycle.ConnectOnNewCharacter(_, NewCrazyCatLady)
+    PlayerLifeCycle.ConnectOnNewCharacter(NewCrazyCatLady)
 
     local catTemplate = getTemplate()
 

@@ -1,6 +1,7 @@
 -- Player Life Cycle Module
 -- Username
 -- September 7, 2020
+local _  = require(game:GetService("ReplicatedStorage").Common.utils.underscore)
 
 local PlayerLifeCycleModule = {}
 PlayerLifeCycleModule.LastPlayerSpawned = nil
@@ -17,11 +18,10 @@ local function onPlayerAdded(onCharacterAdded,player)
 	end
 end
 
-function PlayerLifeCycleModule.ConnectOnNewCharacter(underscore_module,onCharacterAdded)
+function PlayerLifeCycleModule.ConnectOnNewCharacter(onCharacterAdded)
     -- BLEH Need to figure out how to get this stuff passed in.
     -- local _ = self.Shared.underscore
     -- Should be in it's own service
-    local _ = underscore_module
     local Players = game:GetService("Players")
 
     local boundOnPlayerAdded = _.curry(onPlayerAdded, onCharacterAdded)
