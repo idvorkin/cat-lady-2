@@ -1,6 +1,7 @@
 local Knit = require(game:GetService("ReplicatedStorage").Packages.Knit)
 local _  = require(game:GetService("ReplicatedStorage").Common.utils.underscore)
 local PlayerLifeCycle =  require(game:GetService("ReplicatedStorage").Common.utils.PlayerLifeCycleModule)
+local RunService = game:GetService("RunService")
 
 
 local count_cats = 20
@@ -14,7 +15,7 @@ function PrintTopLine(txt)
   -- game.Workspace.Billboard.Label1.Text = txt
 end
 
-function model_to_movable(model)
+function model_to_movable(model:IntValue)
    return model.Cat
 end 
 
@@ -36,13 +37,13 @@ function NegateRandomly(x)
     return x
 end 
 
-function MoveOneSquareRandom(model)
+function MoveOneSquareRandom(model:Model)
     old_pos = model_to_movable(model).Position
     if old_pos == nil then
         return
     end
     
-    local new_pos = old_pos + Vector3:new(NegateRandomly(1),0,NegateRandomly(1))
+    local new_pos = old_pos + Vector3.new(NegateRandomly(1),0,NegateRandomly(1))
     -- print (old_pos)
     -- print (new_pos)
     model:MoveTo(new_pos)
@@ -56,11 +57,11 @@ function MoveRandom(model)
     model:MoveTo(location)
 end
 
-function MoveHowZachWants(model)
+function MoveHowZachWants(model:Model)
     DanceUpAndDown(model)
     local target_position = default_start_location
     if PlayerLifeCycle.LastCharacterSpawned ~= nil then
-        target_position = PlayerLifeCycle.LastPlayerSpawned.PrimaryPart.Position
+        target_position = PlayerLifeCycle.LastCharacterSpawned.PrimaryPart.Position
     end 
     MoveCloserToPosition(model, target_position)
 end 
@@ -77,13 +78,13 @@ function MoveCloserToPosition(model, player_pos)
 
     if old_pos.x > player_pos.x then
         delta_x = -1* velocity
-    elseif  (old_pos.x < player_pos.x) then
+    elseif  old_pos.x < player_pos.x then
         delta_x = 1*velocity
     end 
 
     if old_pos.z > player_pos.z then
         delta_z = -1*velocity
-    elseif  (old_pos.z < player_pos.z) then
+    elseif  old_pos.z < player_pos.z then
         delta_z = 1*velocity
     end 
 
@@ -92,12 +93,11 @@ function MoveCloserToPosition(model, player_pos)
     model:MoveTo(new_pos)
 end 
 
-function DanceUpAndDown(model)
-    old_pos = model_to_movable(model).Position
+function DanceUpAndDown(model:IntValue)
+    local old_pos = model_to_movable(model).Position
     if old_pos == nil then
         return
     end
-    local rand = math.random() -- return a number from 0 to 1
     local velocity = 2
     local delta_y = 1
 
@@ -138,11 +138,12 @@ function CatService:KnitStart()
         MoveHowZachWants(cat)
     end
 
-    -- Run The Cat Game Loop
-    _.each(_.range(1000), function (i)
+    -- Run the game loop forever
+    while true
+    do
         _.each(all_cats, eachTick)
-        wait (1)
-    end )
+        task.wait(1)
+    end 
 end
 
 return CatService
