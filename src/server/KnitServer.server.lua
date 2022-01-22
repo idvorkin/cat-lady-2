@@ -1,5 +1,4 @@
 local Knit = require(game:GetService("ReplicatedStorage").Packages.Knit)
-local CatService = require(game:GetService("ReplicatedStorage").Common.services.CatService)
 
 Knit.AddServices(game:GetService("ReplicatedStorage").Common.services)
 
