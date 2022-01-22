@@ -3,10 +3,8 @@ local _  = require(game:GetService("ReplicatedStorage").Common.utils.underscore)
 local PlayerLifeCycle =  require(game:GetService("ReplicatedStorage").Common.utils.PlayerLifeCycleModule)
 
 
-local Players
 local count_cats = 20
-local g_last_player_spawned =  nil  -- LastPlayerAdded
-local player_pos = Vector3.new(100,0,100)
+local default_start_location = Vector3.new(100,0,100)
 
 -- Can't figure out how to map to in game position, so store it externally
 -- Arguably, this is closer to a view model, so it's more gooder
@@ -30,7 +28,7 @@ function Clone(template)
     return clone
 end
 
-function randomNegate(x)
+function NegateRandomly(x)
     local dice = math.random()
     if dice < 0.5 then 
         return -1*x
@@ -43,10 +41,8 @@ function MoveOneSquareRandom(model)
     if old_pos == nil then
         return
     end
-
-    local new_x  = old_pos.X + randomNegate(1) 
-    local new_z  = old_pos.Z + randomNegate(1)
-    local new_pos = Vector3.new(new_x,old_pos.y, new_z)
+    
+    local new_pos = old_pos + Vector3:new(NegateRandomly(1),0,NegateRandomly(1))
     -- print (old_pos)
     -- print (new_pos)
     model:MoveTo(new_pos)
@@ -62,11 +58,11 @@ end
 
 function MoveHowZachWants(model)
     DanceUpAndDown(model)
-    local target_pos = player_pos
-    if g_last_player_spawned ~= nil then
-        target_pos = g_last_player_spawned.PrimaryPart.Position
+    local target_position = default_start_location
+    if PlayerLifeCycle.LastCharacterSpawned ~= nil then
+        target_position = PlayerLifeCycle.LastPlayerSpawned.PrimaryPart.Position
     end 
-    MoveCloserToPosition(model, target_pos)
+    MoveCloserToPosition(model, target_position)
 end 
 
 function MoveCloserToPosition(model, player_pos)
@@ -105,11 +101,7 @@ function DanceUpAndDown(model)
     local velocity = 2
     local delta_y = 1
 
-    if rand > 0.5 then
-        delta_y = 1 * math.random(velocity)
-    else
-        delta_y = -1 * math.random(velocity)
-    end 
+    delta_y = NegateRandomly(math.random(velocity))
 
     local new_pos = old_pos + Vector3.new(0,delta_y, 0)
     model:MoveTo(new_pos)
@@ -120,18 +112,20 @@ local CatService = Knit.CreateService({Name="CatService"})
 
 
 function NewCrazyCatLady(character)
-    g_last_player_spawned = character
     PrintTopLine(character.Name .. " Is the new Cat Lady")
 end
 
+function getTemplate()
+    return game.Workspace.Templates.Cat
+end
 
 function CatService:KnitStart()
 
-    print('CatService:Start v0.2')
+    print('CatService:Start v0.3')
 
     PlayerLifeCycle.ConnectOnNewCharacter(_, NewCrazyCatLady)
 
-    local catTemplate = game.Workspace.Templates.Cat --put the name of the folder here
+    local catTemplate = getTemplate()
 
     -- Create Cats
     local all_cats = _.map(_.range(count_cats), function (i) return Clone(catTemplate) end)

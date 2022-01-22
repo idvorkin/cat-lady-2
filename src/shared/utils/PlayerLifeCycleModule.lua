@@ -2,13 +2,15 @@
 -- Username
 -- September 7, 2020
 
-
-
 local PlayerLifeCycleModule = {}
+PlayerLifeCycleModule.LastPlayerSpawned = nil
+PlayerLifeCycleModule.LastCharacterSpawned = nil
 
 local function onPlayerAdded(onCharacterAdded,player)
+    PlayerLifeCycleModule.LastPlayerSpawned = player
 	if player.Character then
         onCharacterAdded(player.Character)
+        PlayerLifeCycleModule.LastCharacterSpawned = player.Character
     else
 	    -- Listen for the player (re)spawning 
 	    player.CharacterAdded:Connect(onCharacterAdded)
