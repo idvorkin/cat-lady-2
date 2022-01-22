@@ -14,7 +14,10 @@ local function onPlayerAdded(onCharacterAdded,player)
         PlayerLifeCycleModule.LastCharacterSpawned = player.Character
     else
 	    -- Listen for the player (re)spawning 
-	    player.CharacterAdded:Connect(onCharacterAdded)
+	    player.CharacterAdded:Connect(function(character)
+            onCharacterAdded(character)
+            PlayerLifeCycleModule.LastCharacterSpawned = character
+        end)
 	end
 end
 
