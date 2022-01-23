@@ -71,9 +71,8 @@ function MoveCloserToPosition(model, player_pos)
         return
     end
     local delta_x=0
-    local delta_y=0
     local delta_z=0
-    local velocity = 5
+    local velocity = 0.5
 
     if old_pos.x > player_pos.x then
         delta_x = -1* velocity
@@ -87,20 +86,21 @@ function MoveCloserToPosition(model, player_pos)
         delta_z = 1*velocity
     end 
 
-    local delta = Vector3.new (delta_x, delta_y, delta_z)
+    local delta = Vector3.new (delta_x, delta_z)
     local new_pos = old_pos + delta
-    model:MoveTo(new_pos)
+    model_to_movable(model).CFrame = CFrame.new(new_pos, player_pos)
 end 
 
 function DanceUpAndDown(model:IntValue)
     local old_pos = model_to_movable(model).Position
-    if old_pos == nil then
-        return
-    end
-    local velocity = 2
-    local delta_y = 1
+    local velocity = 1
+    local the_max = 10
+    local the_min = 0
 
-    delta_y = NegateRandomly(math.random(velocity))
+    local delta_y = NegateRandomly(math.random(velocity))
+
+    delta_y = math.min(old_pos.y + delta_y, the_max)
+    delta_y = math.max(old_pos.y + delta_y, the_min)
 
     local new_pos = old_pos + Vector3.new(0,delta_y, 0)
     model:MoveTo(new_pos)
