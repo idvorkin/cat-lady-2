@@ -5,6 +5,20 @@ local PlayerLifeCycle =  require(game:GetService("ReplicatedStorage").Common.uti
 
 local count_cats = 20
 local default_start_location = Vector3.new(100,0,100)
+local eDirection = { up="up", down="down", left="left", right="right"}
+local fps = 10
+local horizontal_velocity = 2/fps
+local vertical_velocity = 4/fps
+
+local cats = {
+    s_minimum_cat_height = 1,
+    Add = function (self, cat)
+        self[cat] = {
+            Direction = eDirection.up
+        }
+    end
+}
+
 
 -- Can't figure out how to map to in game position, so store it externally
 -- Arguably, this is closer to a view model, so it's more gooder
@@ -14,15 +28,12 @@ function PrintTopLine(txt)
   -- game.Workspace.Billboard.Label1.Text = txt
 end
 
-function model_to_movable(model:IntValue)
-   return model.Cat
-end 
 
 
 local i = 0 
 function Clone(template)
     local clone = template:Clone()
-    clone.Parent = game.Workspace
+    clone.Parent = game.Workspace.Clones
     clone.Name = "CLONE:" .. clone.Name  .. i 
     i = i+1
     return clone
@@ -37,7 +48,7 @@ function NegateRandomly(x)
 end 
 
 function MoveOneSquareRandom(model:Model)
-    old_pos = model_to_movable(model).Position
+    old_pos = model.PrimaryPart.Position
     if old_pos == nil then
         return
     end
@@ -57,53 +68,60 @@ function MoveRandom(model)
 end
 
 function MoveHowZachWants(model:Model)
-    DanceUpAndDown(model)
     local target_position = default_start_location
     if PlayerLifeCycle.LastCharacterSpawned ~= nil then
         target_position = PlayerLifeCycle.LastCharacterSpawned.PrimaryPart.Position
     end 
-    MoveCloserToPosition(model, target_position)
+    local old_position = model.PrimaryPart.Position
+    local danceDelta, direction = Dance(old_position, cats[model].Direction)
+    local closerDelta = MoveCloserToTarget(old_position, target_position)
+    local new_position = old_position + danceDelta + closerDelta
+    local new_cframe = CFrame.new(new_position, target_position)
+    model.PrimaryPart.CFrame = new_cframe
+    cats[model].Direction = direction
 end 
 
-function MoveCloserToPosition(model, player_pos)
-    old_pos = model_to_movable(model).Position
-    if old_pos == nil then
-        return
-    end
+function MoveCloserToTarget(old_position:Vector3, target_position:Vector3):Vector3
     local delta_x=0
     local delta_z=0
-    local velocity = 0.5
 
-    if old_pos.x > player_pos.x then
-        delta_x = -1* velocity
-    elseif  old_pos.x < player_pos.x then
-        delta_x = 1*velocity
+    if old_position.X > target_position.X then
+        delta_x = -1* horizontal_velocity
+    elseif  old_position.X < target_position.X then
+        delta_x = 1*horizontal_velocity
     end 
 
-    if old_pos.z > player_pos.z then
-        delta_z = -1*velocity
-    elseif  old_pos.z < player_pos.z then
-        delta_z = 1*velocity
+    if old_position.Z > target_position.Z then
+        delta_z = -1*horizontal_velocity
+    elseif  old_position.Z < target_position.Z then
+        delta_z = 1*horizontal_velocity
     end 
 
-    local delta = Vector3.new (delta_x, delta_z)
-    local new_pos = old_pos + delta
-    model_to_movable(model).CFrame = CFrame.new(new_pos, player_pos)
+    local delta = Vector3.new (delta_x, 0, delta_z)
+    return delta
 end 
 
-function DanceUpAndDown(model:IntValue)
-    local old_pos = model_to_movable(model).Position
-    local velocity = 1
-    local the_max = 10
-    local the_min = 0
+function Dance(position:Vector3, direction):(Vector3, boolean)
+    local max_height = math.random(8,15)
+    local min_height = 2
+    local delta_y = 0 
+    local new_direction = direction
 
-    local delta_y = NegateRandomly(math.random(velocity))
+    if direction == eDirection.up then
+        delta_y = vertical_velocity
+        if position.Y > max_height then
+            new_direction = eDirection.down
+            delta_y = 0
+        end
+    elseif direction == eDirection.down then
+        delta_y = -1 * vertical_velocity
+        if position.Y < min_height then
+            new_direction = eDirection.up
+            delta_y = 0
+        end
+    end 
 
-    delta_y = math.min(old_pos.y + delta_y, the_max)
-    delta_y = math.max(old_pos.y + delta_y, the_min)
-
-    local new_pos = old_pos + Vector3.new(0,delta_y, 0)
-    model:MoveTo(new_pos)
+    return Vector3.new(0, delta_y, 0), new_direction
 end
 
 
@@ -129,6 +147,8 @@ function CatService:KnitStart()
     -- Create Cats
     local all_cats = _.map(_.range(count_cats), function (__) return Clone(catTemplate) end)
 
+    _.each(all_cats, function (cat) cats:Add(cat) end)
+
     --  Move cats to random locations
     _.each(all_cats, MoveRandom)
 
@@ -144,7 +164,7 @@ function CatService:KnitStart()
         -- the function actually used.
         MoveHowZachWants(_.head(all_cats))
         _.each(all_cats, eachTick)
-        task.wait(1)
+        task.wait(1/fps)
     end 
 end
 
