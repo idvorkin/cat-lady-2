@@ -13,9 +13,13 @@ local vertical_velocity = 4/fps
 local cats = {
     s_minimum_cat_height = 1,
     Add = function (self, cat)
+        local direction = eDirection.up
         self[cat] = {
-            Direction = eDirection.up
+            Direction = direction
         }
+        -- Note you can store the attributes in roblox properties or attributes
+        -- TBD: The performance hit, and the code completion may be worse.
+        cat:SetAttribute("Direction", direction)
     end
 }
 
@@ -79,6 +83,7 @@ function MoveHowZachWants(model:Model)
     local new_cframe = CFrame.new(new_position, target_position)
     model.PrimaryPart.CFrame = new_cframe
     cats[model].Direction = direction
+    model:SetAttribute("Direction", direction)
 end 
 
 function MoveCloserToTarget(old_position:Vector3, target_position:Vector3):Vector3
@@ -97,7 +102,11 @@ function MoveCloserToTarget(old_position:Vector3, target_position:Vector3):Vecto
         delta_z = 1*horizontal_velocity
     end 
 
-    local delta = Vector3.new (delta_x, 0, delta_z)
+    jitter_val = 1
+    jitter_x = math.random(-1*jitter_val,jitter_val) * horizontal_velocity
+    jitter_z= math.random(-1*jitter_val,jitter_val) * horizontal_velocity
+
+    local delta = Vector3.new (delta_x+jitter_x, 0, delta_z+jitter_z)
     return delta
 end 
 
