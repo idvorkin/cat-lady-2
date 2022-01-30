@@ -35,110 +35,73 @@ end
 
 
 local i = 0 
+local clones = {}
+
+function AttachCloneToCharector(clone, character)
+    local AlignPosition = Instance.new("AlignPosition")
+    local cloneAttachmentPoint =  clone.PrimaryPart:FindFirstChildOfClass("Attachment")
+    -- XXX: Can I reuse them and just change the Attachment 1? 
+    -- Good idea to try later.
+    local characterAttachmetPoint = character.PrimaryPart:FindFirstChild("CharacterAttachment")
+    AlignPosition.Attachment0 = cloneAttachmentPoint
+    AlignPosition.Attachment1 = characterAttachmetPoint
+    AlignPosition.MaxForce = 15 -- TBD what these values are
+    AlignPosition.MaxVelocity = 15 -- TBD what these values are
+    AlignPosition.RigidityEnabled = false
+    AlignPosition.Parent = clone
+
+
+    local AlignOrientation = Instance.new("AlignOrientation")
+    AlignOrientation.Attachment0 = cloneAttachmentPoint
+    AlignOrientation.Attachment1 = characterAttachmetPoint
+    AlignOrientation.MaxTorque = 300 -- TBD what these values are
+    AlignOrientation.RigidityEnabled = false
+    AlignOrientation.Parent = clone
+
+end
+
 function Clone(template)
     local clone = template:Clone()
     clone.Parent = game.Workspace.Clones
     clone.Name = "CLONE:" .. clone.Name  .. i 
+    clones[clone.Name] = clone
     i = i+1
+
+    -- Add an attachment point (I guess i can add this to the model as well?)
+    local attachmentPointForClone = Instance.new("Attachment")
+    attachmentPointForClone.Name = "CloneAttachment"..clone.Name
+    attachmentPointForClone.Parent = clone.PrimaryPart
     return clone
 end
 
-function NegateRandomly(x)
-    local dice = math.random()
-    if dice < 0.5 then 
-        return -1*x
-    end
-    return x
-end 
 
-function MoveOneSquareRandom(model:Model)
-    old_pos = model.PrimaryPart.Position
-    if old_pos == nil then
-        return
-    end
-    
-    local new_pos = old_pos + Vector3.new(NegateRandomly(1),0,NegateRandomly(1))
-    -- print (old_pos)
-    -- print (new_pos)
-    model:MoveTo(new_pos)
-end
 
-function MoveRandom(model)
-    local radius = 100
-    local x = math.random(-1*radius, 1*radius)
-    local z = math.random(-1*radius, 1*radius)
-    local location = Vector3.new(x,0,z)
-    model:MoveTo(location)
-end
-
-function MoveHowZachWants(model:Model)
-    local target_position = default_start_location
-    if PlayerLifeCycle.LastCharacterSpawned ~= nil then
-        target_position = PlayerLifeCycle.LastCharacterSpawned.PrimaryPart.Position
-    end 
-    local old_position = model.PrimaryPart.Position
-    local danceDelta, direction = Dance(old_position, cats[model].Direction)
-    local closerDelta = MoveCloserToTarget(old_position, target_position)
-    local new_position = old_position + danceDelta + closerDelta
-    local new_cframe = CFrame.new(new_position, target_position)
-    model.PrimaryPart.CFrame = new_cframe
-    cats[model].Direction = direction
-    model:SetAttribute("Direction", direction)
-end 
-
-function MoveCloserToTarget(old_position:Vector3, target_position:Vector3):Vector3
-    local delta_x=0
-    local delta_z=0
-
-    if old_position.X > target_position.X then
-        delta_x = -1* horizontal_velocity
-    elseif  old_position.X < target_position.X then
-        delta_x = 1*horizontal_velocity
-    end 
-
-    if old_position.Z > target_position.Z then
-        delta_z = -1*horizontal_velocity
-    elseif  old_position.Z < target_position.Z then
-        delta_z = 1*horizontal_velocity
-    end 
-
-    jitter_val = 1
-    jitter_x = math.random(-1*jitter_val,jitter_val) * horizontal_velocity
-    jitter_z= math.random(-1*jitter_val,jitter_val) * horizontal_velocity
-
-    local delta = Vector3.new (delta_x+jitter_x, 0, delta_z+jitter_z)
-    return delta
-end 
-
-function Dance(position:Vector3, direction):(Vector3, boolean)
-    local max_height = math.random(8,15)
-    local min_height = 2
-    local delta_y = 0 
-    local new_direction = direction
-
-    if direction == eDirection.up then
-        delta_y = vertical_velocity
-        if position.Y > max_height then
-            new_direction = eDirection.down
-            delta_y = 0
-        end
-    elseif direction == eDirection.down then
-        delta_y = -1 * vertical_velocity
-        if position.Y < min_height then
-            new_direction = eDirection.up
-            delta_y = 0
-        end
-    end 
-
-    return Vector3.new(0, delta_y, 0), new_direction
-end
-
+-- Use a body mover to move.
+-- https://youtu.be/4QjzemDexIs?t=1424
 
 local CatService = Knit.CreateService({Name="CatService"})
 
 
-function NewCrazyCatLady(character)
+function CrazyCatLadyJoined(character)
+
+
+
     PrintTopLine(character.Name .. " Is the new Cat Lady")
+
+    -- QQ: Delete old attachment point(?)
+    local characterAttachment = Instance.new("Attachment")
+    characterAttachment.Parent = character.PrimaryPart
+    characterAttachment.Position = Vector3.new(3,3,0) --  Set Parent Offset
+    characterAttachment.Name = "CharacterAttachment" 
+
+    -- If there's an old one erase all the cat attachments
+    if PlayerLifeCycle.LastCharacterSpawned then
+        _.each(_.values(clones),function(clone)
+            AttachCloneToCharector(clone, character)
+        end)
+    end
+
+
 end
 
 function getTemplate()
@@ -149,7 +112,7 @@ function CatService:KnitStart()
 
     print('CatService:Start v0.3')
 
-    PlayerLifeCycle.ConnectOnNewCharacter(NewCrazyCatLady)
+    PlayerLifeCycle.ConnectOnNewCharacter(CrazyCatLadyJoined)
 
     local catTemplate = getTemplate()
 
@@ -158,23 +121,11 @@ function CatService:KnitStart()
 
     _.each(all_cats, function (cat) cats:Add(cat) end)
 
-    --  Move cats to random locations
-    _.each(all_cats, MoveRandom)
+    task.wait(5)
+    _.each(_.values(clones),function(clone)
+        AttachCloneToCharector(clone, PlayerLifeCycle.LastCharacterSpawned)
+    end)
 
-    -- For Each Cat in Each Tick
-    local eachTick = function (cat)
-        MoveHowZachWants(cat)
-    end
-
-    -- Run the game loop forever
-    while true
-    do
-        -- hack to make linting work by seeing 
-        -- the function actually used.
-        MoveHowZachWants(_.head(all_cats))
-        _.each(all_cats, eachTick)
-        task.wait(1/fps)
-    end 
 end
 
 return CatService
